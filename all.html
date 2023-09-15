@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Usuarios</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+      h1 {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      #user-table {
+        width: 80%;
+        margin: auto;
+        border-collapse: collapse;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+      }
+
+      #user-table th,
+      #user-table td {
+        padding: 12px;
+        text-align: left;
+      }
+
+      #user-table th {
+        background-color: #f2f2f2;
+      }
+
+      #pagination {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      #prev-page,
+      #next-page {
+        padding: 8px 16px;
+        border: none;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      #prev-page:disabled,
+      #next-page:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      #page-info {
+        margin: 0 20px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Lista de Usuarios</h1>
+    <table id="user-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Tipo de Usuario</th>
+          <th>Fecha de Creación</th>
+          <th>Fecha de Actualización</th>
+        </tr>
+      </thead>
+      <tbody id="user-table-body">
+        <!-- Datos de usuarios se llenarán aquí dinámicamente -->
+      </tbody>
+    </table>
+    <div id="pagination">
+      <button id="prev-page">Anterior</button>
+      <span id="page-info">Página 1 de 1</span>
+      <button id="next-page">Siguiente</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        let obj = JSON.parse(localStorage.getItem("userData"));
+        const authorizationToken = obj.token; // Reemplaza con tu token de autorización
+
+        const pageSize = 10;
+        let currentPage = 1;
+        let totalRecords = 0;
+        let totalPages = 1; // Inicializa totalPages en 1
+
+        function fetchUsers(page) {
+          $.ajax({
+            url: `https://navigoapi.com:3800/api/getAll?page=${page}&pageSize=${pageSize}`,
+            type: "GET",
+            headers: {
+              Authorization: authorizationToken,
+            },
+            success: function (response) {
+              const userData = response.data;
+              totalRecords = response.data.length; // Actualiza el total de registros
+              totalPages = Math.ceil(totalRecords / pageSize); // Actualiza totalPages
+
+              // Llenar la tabla con los datos
+              const startIndex = (currentPage - 1) * pageSize;
+              const endIndex = startIndex + pageSize;
+              const pageData = userData.slice(startIndex, endIndex);
+
+              // Llenar la tabla con los datos
+              const tableBody = $("#user-table-body");
+              tableBody.empty();
+
+              pageData.forEach((user) => {
+                const row = `
+                        <tr>
+                            <td>${user._id}</td>
+                            <td>${user.name}</td>
+                            <td>${user.surname}</td>
+                            <td>${user.email}</td>
+                            <td>${user.tel}</td>
+                            <td>${user.tipo_usuario}</td>
+                            <td>${user.created_date}</td>
+                            <td>${user.updated_date}</td>
+                        </tr>
+                    `;
+                tableBody.append(row);
+              });
+
+              // Actualizar información de paginación
+              const pageInfo = $("#page-info");
+              pageInfo.text(`Página ${currentPage} de ${totalPages}`);
+
+              // Habilitar o deshabilitar botones de paginación
+              const prevPageBtn = $("#prev-page");
+              const nextPageBtn = $("#next-page");
+
+              prevPageBtn.prop("disabled", currentPage === 1);
+              nextPageBtn.prop("disabled", currentPage === totalPages);
+            },
+            error: function (error) {
+              console.error(error);
+            },
+          });
+        }
+
+        // Manejar eventos de paginación
+        $("#prev-page").click(function () {
+          if (currentPage > 1) {
+            currentPage--;
+            fetchUsers();
+          }
+        });
+
+        $("#next-page").click(function () {
+          if (currentPage < totalPages) {
+            currentPage++;
+            fetchUsers();
+          }
+        });
+        // Inicializar la vista con la primera página
+        fetchUsers();
+      });
+    </script>
+    <!-- Ajusta la ruta a tu archivo JavaScript -->
+  </body>
+</html>

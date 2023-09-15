@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Listado de Tiendas</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      h1 {
+        background-color: #333;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        margin: 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        margin: 20px auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #333;
+        color: white;
+      }
+
+      .schedule {
+        white-space: pre-line;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .pagination button {
+        background-color: #333;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 10px 15px;
+        margin: 0 5px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Listado de Tiendas</h1>
+    <table id="storeTable">
+      <thead>
+        <tr>
+          <th>Nombre del Negocio</th>
+          <th>Descripción</th>
+          <th>Dirección</th>
+          <th>Teléfono</th>
+          <th>Horario</th>
+          <th>Entrega a Domicilio</th>
+          <th>Latitud</th>
+          <th>Longitud</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+
+    <script>
+      let obj = JSON.parse(localStorage.getItem("userData"));
+
+      // Función para cargar los datos desde la API
+      function loadData(page = 1) {
+        const url = `https://navigoapi.com:3800/api/active/store?page=${page}`;
+        const token = obj.token; // Reemplaza con tu token de autorización
+        fetch(url, {
+          method: "GET",
+          headers: {
+            Authorization: `${token}`,
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const tableBody = document.querySelector("#storeTable tbody");
+            tableBody.innerHTML = "";
+
+            data.data.forEach((store) => {
+              tableBody.innerHTML += `
+                        <tr>
+                            <td>${store.name_business}</td>
+                            <td>${store.description}</td>
+                            <td>${store.address}</td>
+                            <td>${store.phone}</td>
+                            <td class="schedule">${formatSchedule(
+                              store.schedule
+                            )}</td>
+                            <td>${store.domicilio ? "Sí" : "No"}</td>
+                            <td>${store.lan}</td>
+                            <td>${store.lon}</td>
+                        </tr>
+                    `;
+            });
+
+            // Crear botones de paginación
+            const pagination = document.querySelector("#pagination");
+            pagination.innerHTML = "";
+            for (let i = 1; i <= Math.ceil(data.data.length / 10); i++) {
+              pagination.innerHTML += `<button onclick="loadData(${i})">${i}</button>`;
+            }
+          })
+          .catch((error) => console.error(error));
+      }
+
+      // Formatear el horario
+      function formatSchedule(schedule) {
+        const days = [
+          "Lunes",
+          "Martes",
+          "Miercoles",
+          "Jueves",
+          "Viernes",
+          "Sabado",
+          "Domingo",
+        ];
+        const scheduleObj = JSON.parse(schedule);
+
+        return days
+          .map((day) => {
+            const entry = scheduleObj.find((entry) => entry.name === day);
+            if (entry) {
+              return `${day}: ${entry.open} - ${entry.close}`;
+            }
+            return `${day}: Abierto todo el día`;
+          })
+          .join("\n");
+      }
+
+      // Cargar datos al cargar la página
+      window.onload = function () {
+        loadData();
+      };
+    </script>
+  </body>
+</html>

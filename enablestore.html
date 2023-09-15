@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Actualizar Tienda</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      .update-container {
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        text-align: center;
+        width: 300px;
+      }
+
+      .input-group {
+        margin: 15px 0;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding-bottom: 10px;
+        padding-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+      }
+
+      .btn-update {
+        background-color: #333;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 10px 15px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="update-container">
+      <h2>Actualizar Tienda</h2>
+      <div class="input-group">
+        <label for="id">Id del Negocio:</label>
+        <input type="text" id="id" />
+      </div>
+      <div class="input-group">
+        <label for="name_business">Nombre del Negocio:</label>
+        <input type="text" id="name_business" />
+      </div>
+      <div class="input-group">
+        <label for="description">Descripción:</label>
+        <input type="text" id="description" />
+      </div>
+      <div class="input-group">
+        <label for="address">Dirección:</label>
+        <input type="text" id="address" />
+      </div>
+      <div class="input-group">
+        <label for="phone">Teléfono:</label>
+        <input type="text" id="phone" />
+      </div>
+      <div class="input-group">
+        <label for="schedule">Horario:</label>
+        <input type="text" id="schedule" />
+      </div>
+      <div class="input-group">
+        <label for="lan">Latitud:</label>
+        <input type="text" id="lan" />
+      </div>
+      <div class="input-group">
+        <label for="lon">Longitud:</label>
+        <input type="text" id="lon" />
+      </div>
+      <div class="input-group">
+        <label for="domicilio">Entrega a Domicilio:</label>
+        <input type="text" id="domicilio" />
+      </div>
+      <div class="input-group">
+        <label for="status">Estado:</label>
+        <input type="text" id="status" />
+      </div>
+      <button class="btn-update" onclick="updateStore()">
+        Actualizar Tienda
+      </button>
+    </div>
+
+    <script>
+      let obj = JSON.parse(localStorage.getItem("userData"));
+      async function updateStore() {
+        const token = obj.token; // Reemplaza con tu token de autorización
+        const data = {
+          _id: document.getElementById("id").value,
+          name_business: document.getElementById("name_business").value,
+          description: document.getElementById("description").value,
+          address: document.getElementById("address").value,
+          phone: document.getElementById("phone").value,
+          schedule: document.getElementById("schedule").value,
+          lan: document.getElementById("lan").value,
+          lon: document.getElementById("lon").value,
+          domicilio: document.getElementById("domicilio").value,
+          status: Boolean(document.getElementById("status").value),
+        };
+
+        const response = await fetch(
+          "https://navigoapi.com:3800/api/enable/store",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token}`,
+            },
+            body: JSON.stringify(data),
+          }
+        );
+
+        if (response.status === 200) {
+          alert("Tienda actualizada exitosamente.");
+        } else {
+          alert("Error al actualizar la tienda.");
+        }
+      }
+    </script>
+  </body>
+</html>
